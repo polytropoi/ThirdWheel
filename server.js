@@ -17,7 +17,7 @@ async function main() {
   // Use connect method to connect to the server
   await client.connect();
   db = client.db(dbName); 
-  return 'connected to db! ' + endpointSecret;
+  return 'connected to db! ';
 }
 main()
   .then(console.log)
@@ -114,8 +114,8 @@ app.post('/create-checkout-session', async (req, res) => {
       },
     ],
     mode: 'payment',
-    success_url: root +'/public/success.html',
-    cancel_url: root +'/public/cancel.html',
+    success_url: root +'/static/success.html',
+    cancel_url: root +'/static/cancel.html',
   });
 
   res.redirect(303, session.url);

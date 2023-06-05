@@ -1,3 +1,6 @@
 PORT=An Integer With No Quotes like 8000
+MODE="dev or not dev"
+ROOT_DOMAIN="myrootdomain.com"
 STRIPE_KEY="My Stripe Key"
-ENDPOINT_SECRET="My Endpont Secret"
+ENDPOINT_SECRET="My Endpoint Secret"
+MONGO_URL="mongodb://url"
