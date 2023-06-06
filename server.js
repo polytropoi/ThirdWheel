@@ -13,10 +13,12 @@ const root = process.env.MODE != 'dev' ? 'https://' + process.env.ROOT_DOMAIN : 
 const dbName = 'rrdata1';
 let db;
 
+let status = "db not connected...";
 async function main() {
   // Use connect method to connect to the server
   await client.connect();
   db = client.db(dbName); 
+  status = "connected to db!";
   return 'connected to db! ';
 }
 main()
@@ -123,7 +125,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.send("<html><head><title>Regal Rooms</title></head><body>"+
-  "<h1>Welcome to<br>Regal Rooms<br>Immersive Network</h1><br><br>"+
+  "<h1>Welcome to<br>Regal Rooms<br>Immersive Network</h1><br><span>"+status+"</span><br>"+
     "<form action=\x22../create-checkout-session\x22 method=\x22POST\x22>"+
       "<button type=\x22submit\x22>Checkout</button>"+
     "</form></body></html>");
