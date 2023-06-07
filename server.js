@@ -1,7 +1,7 @@
 
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_KEY);
-const endpointSecret = process.env.STRIPE_TEST_ENDPOINT_SECRET;
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 const rootDomain = process.env.ROOT_DOMAIN;
 const express = require('express');
 const app = express();
