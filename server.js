@@ -17,10 +17,12 @@ let db;
 let status = "db not connected...";
 // const uri = "<connection string uri>";
 const client = new MongoClient(url);
-async function run() {
+
+async function dbConnect() {
   try {
     await client.connect();
     // Send a ping to confirm a successful connection
+    db = client.db(dbName);
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
     status = "connected!";
@@ -32,7 +34,9 @@ async function run() {
     await client.close();
   }
 }
-run();
+
+dbConnect();
+
 // async function main() {
 //   // Use connect method to connect to the server
 //   await client.connect();
@@ -73,12 +77,13 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
   }
   console.log("tryna handle event type " + JSON.stringify(event.type));
   // Handle the event
+  const paymentIntent = event.data.object;
   switch (event.type) {
+    
     case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
+      
       console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
-      // Then define and call a method to handle the successful payment intent.
-      // handlePaymentIntentSucceeded(paymentIntent);
+    
         try {
           const coll = db.collection("stripe_events");
           const result = await coll.insertOne(event);
@@ -89,7 +94,18 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
 
       break;
     case 'payment_method.attached':
-      const paymentMethod = event.data.object;
+
+        try {
+          const coll = db.collection("stripe_events");
+          const result = await coll.insertOne(event);
+          console.log("A document was inserted with the _id: " +result.insertedId);
+        } catch (error) {
+          console.log (error);
+        }
+
+      break;
+    case 'charge.succeeded':
+
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
         try {
@@ -101,6 +117,19 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
         }
 
       break;
+      case 'payment_intent.created':
+
+      // Then define and call a method to handle the successful attachment of a PaymentMethod.
+      // handlePaymentMethodAttached(paymentMethod);
+        try {
+          const coll = db.collection("stripe_events");
+          const result = await coll.insertOne(event);
+          console.log("A document was inserted with the _id: " +result.insertedId);
+        } catch (error) {
+          console.log (error);
+        }
+
+      break;    
     default:
       // Unexpected event type
       console.log(`Unhandled event type ${event.type}.`);
