@@ -19,19 +19,20 @@ let status = "db not connected...";
 const client = new MongoClient(url);
 async function run() {
   try {
-    const database = client.db(db);
-    // const movies = database.collection('movies');
-    // // Query for a movie that has the title 'Back to the Future'
-    // const query = { title: 'Back to the Future' };
-    // const movie = await movies.findOne(query);
-    console.log("db connected");
-    status = "db connected!"
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    status = "connected!";
+  } catch {
+    console.log(error);
+    status = error;
   } finally {
     // Ensures that the client will close when you finish/error
     await client.close();
   }
 }
-run().catch(console.dir);
+run();
 // async function main() {
 //   // Use connect method to connect to the server
 //   await client.connect();
