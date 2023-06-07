@@ -3,10 +3,11 @@ require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const endpointSecret = process.env.STRIPE_TEST_ENDPOINT_SECRET;
 const rootDomain = process.env.ROOT_DOMAIN;
-
+const express = require('express');
+const app = express();
 const { MongoClient } = require('mongodb');
 const url = process.env.MONGO_URL;
-const client = new MongoClient(url);
+// const client = new MongoClient(url);
 
 const root = process.env.MODE != 'dev' ? 'https://' + process.env.ROOT_DOMAIN : 'http://localhost:' + process.env.PORT;
 // Database Name
@@ -14,20 +15,36 @@ const dbName = 'rrdata1';
 let db;
 
 let status = "db not connected...";
-async function main() {
-  // Use connect method to connect to the server
-  await client.connect();
-  db = client.db(dbName); 
-  status = "connected to db!";
-  return 'connected to db! ';
+// const uri = "<connection string uri>";
+const client = new MongoClient(url);
+async function run() {
+  try {
+    const database = client.db(db);
+    // const movies = database.collection('movies');
+    // // Query for a movie that has the title 'Back to the Future'
+    // const query = { title: 'Back to the Future' };
+    // const movie = await movies.findOne(query);
+    console.log("db connected");
+    status = "db connected!"
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
 }
-main()
-  .then(console.log)
-  .catch(console.error);
-  // .finally(console.log("connected to db!"));
+run().catch(console.dir);
+// async function main() {
+//   // Use connect method to connect to the server
+//   await client.connect();
+//   db = client.db(dbName); 
+//   status = "connected to db!";
+//   return 'connected to db! ';
+// }
+// main()
+//   .then(console.log)
+//   .catch(console.error, status = error);
+//   // .finally(console.log("connected to db!"));
 
-const express = require('express');
-const app = express();
+
 
 // app.use(express.static('public'));
 app.use('/static', express.static('public'));
