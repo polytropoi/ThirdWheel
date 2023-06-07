@@ -3,8 +3,7 @@ require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 const rootDomain = process.env.ROOT_DOMAIN;
-const express = require('express');
-const app = express();
+// const mongodb = require('mongodb');
 const { MongoClient } = require('mongodb');
 const url = process.env.MONGO_URL;
 // const client = new MongoClient(url);
@@ -12,35 +11,74 @@ const url = process.env.MONGO_URL;
 const root = process.env.MODE != 'dev' ? 'https://' + process.env.ROOT_DOMAIN : 'http://localhost:' + process.env.PORT;
 // Database Name
 const dbName = 'rrdata1';
-let db;
+// let database = null;
 
 let status = "db not connected...";
-// const uri = "<connection string uri>";
+const uri = "<connection string uri>";
 const client = new MongoClient(url);
 
-async function dbConnect() {
-  try {
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    db = client.db(dbName);
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    status = "connected!";
-  } catch {
-    console.log(error);
-    status = error;
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
+// async function dbConnect() {
+//   try {
+//     await client.connect();
+//     // Send a ping to confirm a successful connection
+//     database = database;
+//     await client.db("admin").command({ ping: 1 });
+//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//     status = "connected!";
+//   } catch {
+//     console.log(error);
+//     status = error;
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     await client.close();
+//   }
+// }
 
-dbConnect();
+// dbConnect();
 
+// let database;
+
+// let url = process.env.MONGO_URL;
+
+// mongodb.connect(
+//   connectionString,
+//   { useNewUrlParser: true, useUnifiedTopology: true },
+//   function (err, client) {
+//     database = client.db()
+//     // app.listen(5000)
+//   }
+// );
+
+// var mongo = require('mongodb').MongoClient;
+// var url = "mongodb://localhost:27017/mydb";
+
+// MongoClient.connect(url, function(err, database) {
+//   if (err) throw err;
+//   console.log("Database created!");
+//   database.close();
+// });
+
+// mongo.connect(
+//   url,
+//   {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   },
+//   (err, client) => {
+//     if (err) {
+//       console.error(err)
+//       return
+//     }
+//     database = client.db("rrdata1");
+//     console.log("client connected");
+//   }
+// )
+const express = require('express');
+const app = express();
 // async function main() {
 //   // Use connect method to connect to the server
 //   await client.connect();
-//   db = client.db(dbName); 
+//   db = database; 
 //   status = "connected to db!";
 //   return 'connected to db! ';
 // }
@@ -85,23 +123,33 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
       console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
     
         try {
-          const coll = db.collection("stripe_events");
-          const result = await coll.insertOne(event);
+          // const coll = await database.collection('stripe_events');
+          // const result = await coll.insertOne(event);
+          
+
+          database = client.db(dbName);
+          result = await database.collection('stripe_events').insertOne(event);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
+        } finally {
+          // await client.close();
         }
 
       break;
     case 'payment_method.attached':
 
         try {
-          const coll = db.collection("stripe_events");
-          const result = await coll.insertOne(event);
+          await client.connect();
+          database = client.db(dbName);
+          result = await database.collection('stripe_events').insertOne(event);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
+        } finally {
+          // await client.close();
         }
+
 
       break;
     case 'charge.succeeded':
@@ -109,11 +157,14 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
         try {
-          const coll = db.collection("stripe_events");
-          const result = await coll.insertOne(event);
+          await client.connect();
+          database = client.db(dbName);
+          result = await database.collection('stripe_events').insertOne(event);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
+        } finally {
+          // await client.close();
         }
 
       break;
@@ -122,25 +173,37 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
         try {
-          const coll = db.collection("stripe_events");
-          const result = await coll.insertOne(event);
+          // const coll = await database.collection('stripe_events');
+          // const result = await coll.insertOne(event);
+          await client.connect();
+          database = client.db(dbName);
+          await database.collection('stripe_events').insertOne(event);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
+        } finally {
+          // await client.close();
         }
 
       break;    
-    default:
-      // Unexpected event type
-      console.log(`Unhandled event type ${event.type}.`);
+    // default:
+    //   // Unexpected event type
+    //   console.log(`Unhandled event type ${event.type}.`);
 
-        try {
-          const coll = db.collection("stripe_events");
-          const result = await coll.insertOne(event);
-          console.log("A document was inserted with the _id: " +result.insertedId);
-        } catch (error) {
-          console.log (error);
-        }
+    //     try {
+    //       // const coll = await database.collection('stripe_events');
+    //       // const result = await coll.insertOne(event);
+          
+    //       await client.connect();
+    //       database = client.db(dbName);
+    //       result = await database.collection('stripe_events').insertOne(event);
+    //       console.log("A document was inserted with the _id: " +result.insertedId);
+    //     } catch (error) {
+    //       console.log (error);
+    //     } finally {
+    //       await client.close();
+    //     }
+    //     break;
   }
 
   // Return a 200 response to acknowledge receipt of the event
