@@ -17,79 +17,25 @@ let status = "db not connected...";
 const uri = "<connection string uri>";
 const client = new MongoClient(url);
 
-// async function dbConnect() {
-//   try {
-//     await client.connect();
-//     // Send a ping to confirm a successful connection
-//     database = database;
-//     await client.db("admin").command({ ping: 1 });
-//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-//     status = "connected!";
-//   } catch {
-//     console.log(error);
-//     status = error;
-//   } finally {
-//     // Ensures that the client will close when you finish/error
-//     await client.close();
-//   }
-// }
 
-// dbConnect();
+async function run() {
+  try {
+    await client.connect();
 
-// let database;
+    // Establish and verify connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Connected successfully to mongo!");
+    status = "connected!";
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+run().catch(console.dir);
 
-// let url = process.env.MONGO_URL;
-
-// mongodb.connect(
-//   connectionString,
-//   { useNewUrlParser: true, useUnifiedTopology: true },
-//   function (err, client) {
-//     database = client.db()
-//     // app.listen(5000)
-//   }
-// );
-
-// var mongo = require('mongodb').MongoClient;
-// var url = "mongodb://localhost:27017/mydb";
-
-// MongoClient.connect(url, function(err, database) {
-//   if (err) throw err;
-//   console.log("Database created!");
-//   database.close();
-// });
-
-// mongo.connect(
-//   url,
-//   {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   },
-//   (err, client) => {
-//     if (err) {
-//       console.error(err)
-//       return
-//     }
-//     database = client.db("rrdata1");
-//     console.log("client connected");
-//   }
-// )
 const express = require('express');
 const app = express();
-// async function main() {
-//   // Use connect method to connect to the server
-//   await client.connect();
-//   db = database; 
-//   status = "connected to db!";
-//   return 'connected to db! ';
-// }
-// main()
-//   .then(console.log)
-//   .catch(console.error, status = error);
-//   // .finally(console.log("connected to db!"));
 
-
-
-// app.use(express.static('public'));
 app.use('/static', express.static('public'));
 
 app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (request, response) => {
@@ -125,7 +71,7 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
         try {
           // const coll = await database.collection('stripe_events');
           // const result = await coll.insertOne(event);
-          
+          await client.connect();
 
           database = client.db(dbName);
           result = await database.collection('stripe_events').insertOne(event);
