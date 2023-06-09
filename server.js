@@ -193,10 +193,7 @@ app.get('/stripe_events', async (req, res) => {
 
 app.post('/create-checkout-session', async (req, res) => {
   const session = await stripe.checkout.sessions.create({
-    metadata: {
-      product_id: 1000,
-      product_name: "super cool immersive rock show!"
-    },
+
     line_items: [
       {
         price_data: {
@@ -212,6 +209,10 @@ app.post('/create-checkout-session', async (req, res) => {
     mode: 'payment',
     success_url: root +'/stripe_events',
     cancel_url: root +'/static/cancel.html',
+    metadata: {
+      product_id: 1000,
+      product_name: "super cool immersive rock show!"
+    },
   });
 
   res.redirect(303, session.url);
