@@ -120,6 +120,9 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
           data.email = event.data.object.billing_details.email;
           data.name = event.data.object.billing_details.name;
           data.phone = event.data.object.billing_details.phone;
+          data.receipt_email = event.data.object.receipt_email;
+          data.receipt_url = event.data.object.receipt_url;
+          data.metadata = event.data.object.metadata;
           result = await database.collection('stripeEvents').insertOne(data);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
@@ -187,12 +190,16 @@ app.get('/stripe_events', async (req, res) => {
 
 app.post('/create-checkout-session', async (req, res) => {
   const session = await stripe.checkout.sessions.create({
+    metadata: {
+      order_id: 1000,
+      product_name: "super cool immersive rock show!"
+    },
     line_items: [
       {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'T-shirt',
+            name: 'super cool immersive rock show',
           },
           unit_amount: 2000,
         },
