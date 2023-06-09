@@ -53,20 +53,20 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
         signature,
         endpointSecret
       );
-      console.log(JSON.stringify(event));
+      // console.log(JSON.stringify(event));
     } catch (err) {
       console.log(`Webhook signature verification failed.`, err.message);
       return response.sendStatus(400);
     }
   }
-  console.log("tryna handle event type " + JSON.stringify(event.type));
+  // console.log("tryna handle event type " + JSON.stringify(event.type));
   // Handle the event
-  const paymentIntent = event.data.object;
+  // const paymentIntent = event.data.object;
   switch (event.type) {
     
     case 'payment_intent.succeeded':
       
-      console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+      // console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
     
         // try {
         //   // const coll = await database.collection('stripe_events');
@@ -111,6 +111,7 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
           await client.connect();
           database = client.db(dbName);
           let data = {};
+          data.livemode = event.livemode;
           data.type = event.type;
           data.dateCreated = event.created;
           data.stripeEventID = event.id;
@@ -122,13 +123,15 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
           data.phone = event.data.object.billing_details.phone;
           data.receipt_email = event.data.object.receipt_email;
           data.receipt_url = event.data.object.receipt_url;
-          data.metadata = event.data.object.metadata;
-          result = await database.collection('stripeEvents').insertOne(data);
+          data.product_id = event.data.object.metadata.product_id;
+          data.product_name = event.data.object.metadata.product_name;
+          // data.metadata = event.data.object.metadata;
+          let result = await database.collection('stripeEvents').insertOne(data);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
         } finally {
-          // await client.close();
+          await client.close();
         }
 
       break;
@@ -191,7 +194,7 @@ app.get('/stripe_events', async (req, res) => {
 app.post('/create-checkout-session', async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     metadata: {
-      order_id: 1000,
+      product_id: 1000,
       product_name: "super cool immersive rock show!"
     },
     line_items: [
@@ -207,7 +210,7 @@ app.post('/create-checkout-session', async (req, res) => {
       },
     ],
     mode: 'payment',
-    success_url: root +'/static/success.html',
+    success_url: root +'/stripe_events',
     cancel_url: root +'/static/cancel.html',
   });
 
