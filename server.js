@@ -68,33 +68,38 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
       
       console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
     
-        try {
-          // const coll = await database.collection('stripe_events');
-          // const result = await coll.insertOne(event);
-          await client.connect();
+        // try {
+        //   // const coll = await database.collection('stripe_events');
+        //   // const result = await coll.insertOne(event);
+        //   await client.connect();
 
-          database = client.db(dbName);
-          result = await database.collection('stripe_events').insertOne(event);
-          console.log("A document was inserted with the _id: " +result.insertedId);
-        } catch (error) {
-          console.log (error);
-        } finally {
-          // await client.close();
-        }
+        //   database = client.db(dbName);
+        //   let data = {};
+        //   data.type = event.type;
+        //   data.dateCreated = event.date;
+        //   data.stripeEventID = event.id;
+
+        //   result = await database.collection('stripe_events').insertOne(event);
+        //   console.log("A document was inserted with the _id: " +result.insertedId);
+        // } catch (error) {
+        //   console.log (error);
+        // } finally {
+        //   // await client.close();
+        // }
 
       break;
     case 'payment_method.attached':
 
-        try {
-          await client.connect();
-          database = client.db(dbName);
-          result = await database.collection('stripe_events').insertOne(event);
-          console.log("A document was inserted with the _id: " +result.insertedId);
-        } catch (error) {
-          console.log (error);
-        } finally {
-          // await client.close();
-        }
+        // try {
+        //   await client.connect();
+        //   database = client.db(dbName);
+        //   result = await database.collection('stripe_events').insertOne(event);
+        //   console.log("A document was inserted with the _id: " +result.insertedId);
+        // } catch (error) {
+        //   console.log (error);
+        // } finally {
+        //   // await client.close();
+        // }
 
 
       break;
@@ -105,7 +110,17 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
         try {
           await client.connect();
           database = client.db(dbName);
-          result = await database.collection('stripe_events').insertOne(event);
+          let data = {};
+          data.type = event.type;
+          data.dateCreated = event.created;
+          data.stripeEventID = event.id;
+          data.amount = event.data.object.amount;
+          data.description = event.data.object.description;
+          data.customer = event.data.object.customer;
+          data.email = event.data.object.billing_details.email;
+          data.name = event.data.object.billing_details.name;
+          data.phone = event.data.object.billing_details.phone;
+          result = await database.collection('stripeEvents').insertOne(data);
           console.log("A document was inserted with the _id: " +result.insertedId);
         } catch (error) {
           console.log (error);
@@ -118,18 +133,18 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
 
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
-        try {
-          // const coll = await database.collection('stripe_events');
-          // const result = await coll.insertOne(event);
-          await client.connect();
-          database = client.db(dbName);
-          await database.collection('stripe_events').insertOne(event);
-          console.log("A document was inserted with the _id: " +result.insertedId);
-        } catch (error) {
-          console.log (error);
-        } finally {
-          // await client.close();
-        }
+        // try {
+        //   // const coll = await database.collection('stripe_events');
+        //   // const result = await coll.insertOne(event);
+        //   await client.connect();
+        //   database = client.db(dbName);
+        //   result = await database.collection('stripe_events').insertOne(event);
+        //   console.log("A document was inserted with the _id: " +result.insertedId);
+        // } catch (error) {
+        //   console.log (error);
+        // } finally {
+        //   // await client.close();
+        // }
 
       break;    
     // default:
@@ -155,7 +170,20 @@ app.post('/stripe_webhooks', express.raw({type: 'application/json'}), async (req
   // Return a 200 response to acknowledge receipt of the event
   response.send();
 });
-
+app.get('/stripe_events', async (req, res) => {
+  
+  try {
+    // const coll = await database.collection('stripe_events');
+    // const result = await coll.insertOne(event);
+    await client.connect();
+    database = client.db("rrdata1");
+    result = await database.collection("stripeEvents").find().toArray();
+    // console.log(JSON.stringify(result));
+    res.send("<div><pre>" + JSON.stringify(result, undefined, 2) +"</pre></div>");
+  } catch (error) {
+    console.log (error);
+  }
+})
 
 app.post('/create-checkout-session', async (req, res) => {
   const session = await stripe.checkout.sessions.create({
